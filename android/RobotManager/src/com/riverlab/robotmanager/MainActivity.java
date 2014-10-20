@@ -37,10 +37,15 @@ import com.riverlab.robotmanager.bluetooth.BluetoothDevicesListActivity;
 import com.riverlab.robotmanager.bluetooth.ConnectedThread;
 import com.riverlab.robotmanager.messages.MessageActivity;
 import com.riverlab.robotmanager.messages.MessageListActivity;
+import com.riverlab.robotmanager.messages.RobotMessage;
+import com.riverlab.robotmanager.robot.Robot;
 import com.riverlab.robotmanager.robot.ViewRobotListActivity;
+import com.riverlab.robotmanager.voice_recognition.Vocabulary;
 import com.riverlab.robotmanager.voice_recognition.VoiceRecognitionThread;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Set;
 
 /*This is the Main Activity for the Robot Manager App.  It displays the
@@ -129,7 +134,10 @@ public class MainActivity extends Activity {
 	private int numMsgs = 0;
 	private int numNewMsgs = 0;
 	private boolean msgFlag = false;
-
+	
+	//Demo global variables
+	private String annaVocab = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><vocab default=\"manual,high level\"><sub-vocab name=\"manual\"><phrase text=\"stop\"/><phrase text=\"drive\"><modifier use=\"directions\" required=\"true\" ><modifier use=\"speed\" required=\"false\" /></modifier></phrase><phrase text=\"turn\"><modifier use=\"directions\" required=\"true\" ><modifier use=\"speed\" required=\"false\" /></modifier></phrase></sub-vocab><sub-vocab name=\"high level\"><phrase text=\"save location\"><modifier use= \"destination\" required=\"true\" /></phrase><phrase text=\"go to\"><modifier use=\"destination\" required=\"true\"><modifier use=\"speed\" required=\"false\" /></modifier></phrase></sub-vocab><sub-vocab name=\"destination\"><phrase text=\"kitchen\" /><phrase text=\"bathroom\" /><phrase text=\"bedroom\" /><phrase text=\"front door\" /></sub-vocab><sub-vocab name=\"directions\"><phrase text=\"forward\"/><phrase text=\"backward\"/><phrase text=\"left\"/><phrase text=\"right\"/></sub-vocab><sub-vocab name=\"speed\"><phrase text=\"slowly\" /><phrase text=\"quickly\" /></sub-vocab></vocab>";
+	private String oryxVocab = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><vocab default=\"manual,high level,again\"><sub-vocab name=\"manual\"><phrase text=\"drive\"><modifier use=\"linear_directions\" required=\"true\" /></phrase><phrase text=\"turn left\" /><phrase text=\"turn right\" /><phrase text=\"look up\" /><phrase text=\"look down\" /><phrase text=\"look left\" /><phrase text=\"look right\" /><phrase text=\"move arm up\" /><phrase text=\"move arm down\" /><phrase text=\"move arm left\" /><phrase text=\"move arm right\" /></sub-vocab><sub-vocab name=\"high level\"><phrase text=\"save location\"><modifier use= \"destination\" required=\"true\" /></phrase><phrase text=\"go to\"><modifier use=\"destination\" required=\"true\" /></phrase></sub-vocab><sub-vocab name=\"again\"><phrase text=\"again\" /></sub-vocab><sub-vocab name=\"destination\"><phrase text=\"home\" /><phrase text=\"sample\" /><phrase text=\"checkpoint\" /></sub-vocab><sub-vocab name=\"linear_directions\"><phrase text=\"forward\"/><phrase text=\"backward\"/></sub-vocab><sub-vocab name=\"yaw_directions\"><phrase text=\"left\"/><phrase text=\"right\"/></sub-vocab><sub-vocab name=\"pitch_directions\"><phrase text=\"up\"/><phrase text=\"down\"/></sub-vocab></vocab>"; 
 	
 	/*
 	 * This function initializes the GUI and worker threads, 
@@ -178,6 +186,46 @@ public class MainActivity extends Activity {
 		Thread.currentThread().setName("Main Activity Thread");
 		mConnectedThread.setName("Connected Thread");
 		mVoiceThread.setName("Voice Recognition Thread");
+		
+		setupDemo();
+	}
+	
+	protected void setupDemo() 
+	{
+		Robot newRobot = new Robot();
+		newRobot.setName("Anna");
+		newRobot.setInfo("WPI's semi-autonomous wheelchair");
+		newRobot.setVocabulary(new Vocabulary(annaVocab));
+		Message msg = mVoiceThread.getHandler().obtainMessage(VoiceRecognitionThread.ADD_VOCAB_MESSAGE, newRobot.getName());
+		mVoiceThread.getHandler().sendMessageAtFrontOfQueue(msg);
+		mApplication.addRobot(newRobot);
+		
+		Robot oryxBot = new Robot();
+		oryxBot.setName("Oryx");
+		oryxBot.setInfo("WPI's planetary exploration rover");
+		oryxBot.setVocabulary(new Vocabulary(oryxVocab));
+		Message msg1 = mVoiceThread.getHandler().obtainMessage(VoiceRecognitionThread.ADD_VOCAB_MESSAGE, oryxBot.getName());
+		mVoiceThread.getHandler().sendMessageAtFrontOfQueue(msg1);
+		mApplication.addRobot(oryxBot);
+		
+		Calendar cal = Calendar.getInstance();
+		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+		
+		RobotMessage rMsg = new RobotMessage();
+		rMsg.setType("Text");
+		rMsg.setSender("Anna");
+		rMsg.setText("Hello world!");
+		rMsg.setPriority(0);
+		rMsg.setTimestamp(sdf.format(cal.getTime()));
+		mApplication.addMessage(rMsg);
+		
+		RobotMessage rMsg2 = new RobotMessage();
+		rMsg2.setType("Text");
+		rMsg2.setSender("Oryx");
+		rMsg2.setText("Hi! I'm Oryx!");
+		rMsg2.setPriority(0);
+		rMsg2.setTimestamp(sdf.format(cal.getTime()));
+		mApplication.addMessage(rMsg2);
 	}
 
 	/*

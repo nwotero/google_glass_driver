@@ -100,17 +100,17 @@ public class VoiceRecognitionThread extends HandlerThread
 	{
 		//Standard lists of voice commands
 		mSystemCommands = new ArrayList<String>();
-		mConnectCommands = new ArrayList<String>();
+		//mConnectCommands = new ArrayList<String>();
 
 
 		//Prefix all bluetooth device names with "connect to " to allow the
 		//user to connect through voice control and add them to the connect command list
-		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+		/*mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 		for (BluetoothDevice device : mBluetoothAdapter.getBondedDevices())
 		{
 			mConnectCommands.add("Connect to " + device.getName());
 		}
-		mConnectCommands.add("Close robot manager");
+		mConnectCommands.add("Close robot manager");*/
 
 
 		//Hard coded system commands
@@ -127,8 +127,8 @@ public class VoiceRecognitionThread extends HandlerThread
 
 
 		//Set up command listener
-		mVoiceConfigList = new ArrayList<String>(mConnectCommands);
-		mVoiceConfig = new VoiceConfig("MyVoiceConfig", mConnectCommands.toArray(new String[mConnectCommands.size()]));
+		mVoiceConfigList = new ArrayList<String>(mSystemCommands);
+		mVoiceConfig = new VoiceConfig("MyVoiceConfig", mSystemCommands.toArray(new String[mSystemCommands.size()]));
 		mVoiceInputHelper = new VoiceInputHelper(mContext, new VoiceListenerImpl(mVoiceConfig),
 				VoiceInputHelper.newUserActivityObserver(mContext));
 
@@ -190,7 +190,7 @@ public class VoiceRecognitionThread extends HandlerThread
 					setContext(newContext);
 					break;
 					
-				case CONNECTION_MESSAGE:
+				/*case CONNECTION_MESSAGE:
 					String status = (String)msg.obj;
 					if (status.equals("connected"))
 					{
@@ -202,7 +202,7 @@ public class VoiceRecognitionThread extends HandlerThread
 						useSystemCommands(false);
 						changeVocab(mConnectCommands);
 					}
-					break;
+					break;*/
 					
 				case UPDATE_MESSAGE:
 					update();
@@ -333,22 +333,22 @@ public class VoiceRecognitionThread extends HandlerThread
 		Log.i("VoiceThread", "Changing vocab");
 		
 		//Only update vocab if connected or changing to connection commands
-		if (mApplication.getConnectionStatus() || newVocab.equals(mConnectCommands))
-		{
+		//if (mApplication.getConnectionStatus() || newVocab.equals(mConnectCommands))
+		//{
 			//Empty current list and repopulate using the provided list
-			mVoiceConfigList = new ArrayList<String>();
-			mVoiceConfigList.addAll(newVocab);
+		mVoiceConfigList = new ArrayList<String>();
+		mVoiceConfigList.addAll(newVocab);
 			
-			if (usingSystemCommands)
-			{
-				mVoiceConfigList.addAll(mSystemCommands);
-				mVoiceConfigList.addAll(mApplication.getRobotNames());
-			}
-		}
-		else //If we are not connected, make sure the connect commands are available
+		if (usingSystemCommands)
 		{
-			mVoiceConfigList.addAll(mConnectCommands);
+			mVoiceConfigList.addAll(mSystemCommands);
+			mVoiceConfigList.addAll(mApplication.getRobotNames());
 		}
+		//}
+		//else //If we are not connected, make sure the connect commands are available
+		//{
+		//	mVoiceConfigList.addAll(mConnectCommands);
+		//}
 
 		//Remove, replace, and restart the voice listener
 		mVoiceInputHelper.removeVoiceServiceListener();
@@ -420,8 +420,8 @@ public class VoiceRecognitionThread extends HandlerThread
 	 */
 	public void reset(String expression)
 	{
-		Message msg = connectedHandler.obtainMessage(ConnectedThread.WRITE_MESSAGE, expression);
-		connectedHandler.sendMessage(msg);
+		//Message msg = connectedHandler.obtainMessage(ConnectedThread.WRITE_MESSAGE, expression);
+		//connectedHandler.sendMessage(msg);
 
 		mHelper = null;
 		usingSystemCommands = true;
@@ -504,8 +504,8 @@ public class VoiceRecognitionThread extends HandlerThread
 					mainHandler.sendMessageAtFrontOfQueue(msg);
 
 					//Check to see if it is a system command.
-					if (recognizedStr.startsWith("Connect to"))
-					{
+					if (recognizedStr.startsWith("Connect to")) {}
+					/*{
 						if (!isConnected) //If already connected do not connect
 						{
 							Message msgConnected = connectedHandler.obtainMessage(ConnectedThread.CONNECT_MESSAGE, recognizedStr.substring(11));
@@ -518,6 +518,7 @@ public class VoiceRecognitionThread extends HandlerThread
 						msgConnected.what = ConnectedThread.DISCONNECT_MESSAGE;
 						connectedHandler.sendMessage(msgConnected);
 					}
+					*/
 
 					else if (recognizedStr.equals("Close robot manager"))
 					{
